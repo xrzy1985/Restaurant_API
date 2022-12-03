@@ -37,25 +37,31 @@ namespace Restaurant_API.Controllers
                         for (int j = 0; j < storeHoursDataTable.Rows.Count; j++)
                         {
                             DataRow storeHoursData = storeHoursDataTable.Rows[j];
-                            if (hours.ContainsKey(Convert.ToString(storeHoursData["dayOfWeek"])))
+                            if (storeHoursData != null)
                             {
-                                List<string> existingList = new List<string>(hours[Convert.ToString(storeHoursData["dayOfWeek"])]);
-                                string newHours = Convert.ToString(storeHoursData["hours"]);
-                                if (!string.IsNullOrEmpty(newHours))
+                                if (hours.ContainsKey(Convert.ToString(storeHoursData["dayOfWeek"])))
                                 {
-                                    existingList.Add(Convert.ToString(storeHoursData["hours"]));
+                                    List<string> existingList = new List<string>(hours[Convert.ToString(storeHoursData["dayOfWeek"])]);
+                                    string newHours = Convert.ToString(storeHoursData["hours"]);
+                                    if (!string.IsNullOrEmpty(newHours))
+                                    {
+                                        existingList.Add(Convert.ToString(storeHoursData["hours"]));
+                                    }
+                                    hours[Convert.ToString(storeHoursData["dayOfWeek"])] = existingList;
                                 }
-                                hours[Convert.ToString(storeHoursData["dayOfWeek"])] = existingList;
-                            }
-                            else
+                                else
+                                {
+                                    List<string> newList = new List<string>();
+                                    string newHours = Convert.ToString(storeHoursData["hours"]);
+                                    if (!string.IsNullOrEmpty(newHours))
+                                    {
+                                        newList.Add(Convert.ToString(storeHoursData["hours"]));
+                                    }
+                                    hours[Convert.ToString(storeHoursData["dayOfWeek"])] = newList;
+                                }
+                            } else
                             {
-                                List<string> newList = new List<string>();
-                                string newHours = Convert.ToString(storeHoursData["hours"]);
-                                if (!string.IsNullOrEmpty(newHours))
-                                {
-                                    newList.Add(Convert.ToString(storeHoursData["hours"]));
-                                }
-                                hours[Convert.ToString(storeHoursData["dayOfWeek"])] = newList;
+                                return new Error(400, "There was an issue fetching the stores data.");
                             }
                         }
                         stores.Add(new Store(
