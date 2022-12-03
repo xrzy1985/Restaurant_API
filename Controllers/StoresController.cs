@@ -24,7 +24,7 @@ namespace Restaurant_API.Controllers
             string storesSql = "select storeId, storeName, address1, address2, city, state, postalCode from stores";
             try
             {
-                DataTable dataTable = new Query(storesSql, _config).GetDataTable();
+                DataTable dataTable = new GetQuery(storesSql, _config).GetDataTable();
                 List<Store> stores = new List<Store>();
                 if (dataTable != null)
                 {
@@ -32,7 +32,7 @@ namespace Restaurant_API.Controllers
                     {
                         DataRow data = dataTable.Rows[i];
                         string hoursSql = $"select * from storeHours where storeId = {data["storeId"]}";
-                        DataTable storeHoursDataTable = new Query(hoursSql, _config).GetDataTable();
+                        DataTable storeHoursDataTable = new GetQuery(hoursSql, _config).GetDataTable();
                         Dictionary<string, List<string>> hours = new Dictionary<string, List<string>>();
                         for (int j = 0; j < storeHoursDataTable.Rows.Count; j++)
                         {
@@ -61,7 +61,7 @@ namespace Restaurant_API.Controllers
                                 }
                             } else
                             {
-                                return new Error(400, "There was an issue fetching the stores data.");
+                                return new ErrorResponse(400, "There was an issue fetching the stores data.");
                             }
                         }
                         stores.Add(new Store(
@@ -75,14 +75,14 @@ namespace Restaurant_API.Controllers
                             hours
                         ));
                     }
-                    return new Response(200, stores);
+                    return new GetResponse(200, stores);
                 } else
                 {
-                    return new Error(400, "There was an issue fetching the stores data.");
+                    return new ErrorResponse(400, "There was an issue fetching the stores data.");
                 }
             } catch (Exception ex)
             {
-                return new Error(500, ex.Message);
+                return new ErrorResponse(500, ex.Message);
             }
         }
     }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Restaurant_API.models;
 using Restaurant_API.queries;
 using Restaurant_API.response;
@@ -22,12 +23,12 @@ namespace Restaurant_API.Controllers
         {
             try
             {
-                DataTable dataTable = new Query("select uuid, name, email, dob from users where id = 1", _config).GetDataTable();
+                DataTable dataTable = new GetQuery("select uuid, name, email, dob from users where id = 1", _config).GetDataTable();
 
                 if (dataTable != null)
                 {
                     DataRow data = dataTable.Rows[0];
-                    return new Response(200, new User(
+                    return new GetResponse(200, new User(
                         Convert.ToString(data["uuid"]),
                         Convert.ToString(data["name"]),
                         Convert.ToString(data["email"]),
@@ -35,11 +36,48 @@ namespace Restaurant_API.Controllers
                     ));
                 } else
                 {
-                    return new Error(400, "There was an error fetching the data.");
+                    return new ErrorResponse(400, "There was an error fetching the data.");
                 }
             } catch(Exception ex)
             {
-                return new Error(500, ex.Message);
+                return new ErrorResponse(500, ex.Message);
+            }
+        }
+
+        [HttpPost]
+        public ActionResult<object> PostUser(NewUser user)
+        {
+            string userSql = $"insert into users (uuid, name, email, dob) values (@Uuid, @Name, @Email, @Dob)";
+            string passSql = $"insert into login (uuid, password) values(@Uuid, @Password)";
+            SqlDataAdapter adapter = new SqlDataAdapter();
+            SqlConnection connection = new SqlConnection(_config.GetConnectionString("Restaurant").ToString());
+            SqlCommand command = new SqlCommand();
+            try
+            {
+                connection.Open();
+                command = new SqlCommand(userSql, connection);
+                command.Parameters.Add("@Uuid", SqlDbType.VarChar, 50).Value = user.Uuid;
+                command.Parameters.Add("@Name", SqlDbType.VarChar, 50).Value = user.Name;
+                command.Parameters.Add("@Email", SqlDbType.VarChar, 50).Value = user.Email;
+                command.Parameters.Add("@Dob", SqlDbType.VarChar, 50).Value =
+                    DateTime.Parse(DateOnly.FromDateTime(user.Dob).ToString()).ToString("yyyy-MM-dd");
+                adapter.InsertCommand = command;
+                adapter.InsertCommand.ExecuteNonQuery();
+                command = new SqlCommand(passSql, connection);
+                command.Parameters.Add("@Uuid", SqlDbType.VarChar, 50).Value = user.Uuid;
+                command.Parameters.Add("@Password", SqlDbType.VarChar, 50).Value = user.Password;
+                adapter.InsertCommand = command;
+                adapter.InsertCommand.ExecuteNonQuery();
+                connection.Close();
+                return new Dictionary<string, object>()
+                {
+                    { "status", 200 },
+                    { "message", "The user was created successfully." }
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ErrorResponse(500, ex.Message);
             }
         }
     }

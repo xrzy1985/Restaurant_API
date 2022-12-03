@@ -22,7 +22,7 @@ namespace Restaurant_API.Controllers
         {
             try
             {
-                DataTable dataTable = new Query("select * from users", _config).GetDataTable();
+                DataTable dataTable = new GetQuery("select * from users", _config).GetDataTable();
                 List<User> usersList = new List<User>();
                 if (dataTable.Rows.Count > 0)
                 {
@@ -42,10 +42,10 @@ namespace Restaurant_API.Controllers
                         }
                     }
                 }
-                return new Response(200, new Users(usersList));
+                return new GetResponse(200, new Users(usersList));
             } catch(Exception ex)
             {
-                return new Error(500, ex.Message);
+                return new ErrorResponse(500, ex.Message);
             }
         }
 
