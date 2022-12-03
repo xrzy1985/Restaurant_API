@@ -7,7 +7,16 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// add cors for development
+builder.Services.AddCors(options => options.AddPolicy(name: "RestaurantOrigins", policy =>
+{
+    policy.WithOrigins("http://localhost:4200").AllowAnyMethod().AllowAnyHeader();
+}));
+
 var app = builder.Build();
+
+// add cors to the app object using the Origins set above
+app.UseCors("RestaurantOrigins");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
