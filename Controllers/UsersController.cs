@@ -31,13 +31,15 @@ namespace Restaurant_API.Controllers
                         DataRow data = dataTable.Rows[i];
                         if (data != null)
                         {
-                            usersList.Add(new Users(
-                                Convert.ToInt32(data["id"]),
-                                Convert.ToString(data["uuid"]),
-                                Convert.ToString(data["name"]),
-                                Convert.ToString(data["email"]),
-                                (DateTime)data["dob"]
-                            ));
+                            usersList.Add(
+                                new Users(
+                                    Convert.ToInt32(data["id"]),
+                                    Convert.ToString(data["uuid"]),
+                                    Convert.ToString(data["name"]),
+                                    Convert.ToString(data["email"]),
+                                    (DateTime)data["dob"]
+                                )
+                            );
                         }
                     }
                 }
