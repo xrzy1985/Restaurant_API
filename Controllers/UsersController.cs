@@ -23,7 +23,7 @@ namespace Restaurant_API.Controllers
             try
             {
                 DataTable dataTable = new Query("select * from users", _config).GetDataTable();
-                List<Users> usersList = new List<Users>();
+                List<User> usersList = new List<User>();
                 if (dataTable.Rows.Count > 0)
                 {
                     for (int i = 0; i < dataTable.Rows.Count; i++)
@@ -32,8 +32,7 @@ namespace Restaurant_API.Controllers
                         if (data != null)
                         {
                             usersList.Add(
-                                new Users(
-                                    Convert.ToInt32(data["id"]),
+                                new User(
                                     Convert.ToString(data["uuid"]),
                                     Convert.ToString(data["name"]),
                                     Convert.ToString(data["email"]),
@@ -43,7 +42,7 @@ namespace Restaurant_API.Controllers
                         }
                     }
                 }
-                return new Response(200, usersList);
+                return new Response(200, new Users(usersList));
             } catch(Exception ex)
             {
                 return new Error(500, ex.Message);

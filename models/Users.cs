@@ -2,22 +2,12 @@
 {
     public class Users
     {
-        public int Id { get; set; }
-        public string Uuid { get; set; }
-        public string Name { get; set; }
-        public string Email { get; set; }
-        public DateTime Dob { get; set; }
+        public List<User> users { get; set; }
 
         public Users() { }
-
-        public Users(int id, string uuid, string name, string email, DateTime dob)
+        public Users(List<User> users)
         {
-            Id = id;
-            Uuid = uuid;
-            Name = name;
-            Email = email;
-            Dob = dob;
+            this.users = users;
         }
-
     }
 }
