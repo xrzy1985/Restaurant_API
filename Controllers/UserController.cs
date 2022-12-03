@@ -18,12 +18,12 @@ namespace Restaurant_API.Controllers
             _config = config;
         }
 
-        [HttpGet]
-        public ActionResult<object> GetUser()
+        [HttpGet("{id}")]
+        public ActionResult<object> GetUser(int id)
         {
             try
             {
-                DataTable dataTable = new GetQuery("select uuid, name, email, dob from users where id = 1", _config).GetDataTable();
+                DataTable dataTable = new GetQuery($"select uuid, name, email, dob from users where id = {id}", _config).GetDataTable();
 
                 if (dataTable != null)
                 {
@@ -56,7 +56,8 @@ namespace Restaurant_API.Controllers
             {
                 connection.Open();
                 command = new SqlCommand(userSql, connection);
-                command.Parameters.Add("@Uuid", SqlDbType.VarChar, 50).Value = user.Uuid;
+                string userUuid = Guid.NewGuid().ToString();
+                command.Parameters.Add("@Uuid", SqlDbType.VarChar, 50).Value = userUuid;
                 command.Parameters.Add("@Name", SqlDbType.VarChar, 50).Value = user.Name;
                 command.Parameters.Add("@Email", SqlDbType.VarChar, 50).Value = user.Email;
                 command.Parameters.Add("@Dob", SqlDbType.VarChar, 50).Value =
@@ -64,7 +65,7 @@ namespace Restaurant_API.Controllers
                 adapter.InsertCommand = command;
                 adapter.InsertCommand.ExecuteNonQuery();
                 command = new SqlCommand(passSql, connection);
-                command.Parameters.Add("@Uuid", SqlDbType.VarChar, 50).Value = user.Uuid;
+                command.Parameters.Add("@Uuid", SqlDbType.VarChar, 50).Value = userUuid;
                 command.Parameters.Add("@Password", SqlDbType.VarChar, 50).Value = user.Password;
                 adapter.InsertCommand = command;
                 adapter.InsertCommand.ExecuteNonQuery();
