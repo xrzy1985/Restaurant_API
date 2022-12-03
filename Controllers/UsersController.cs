@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Restaurant_API.models;
 using Restaurant_API.response;
-using Restaurant_API.Queries;
+using Restaurant_API.queries;
 using System.Data;
 
 namespace Restaurant_API.Controllers
