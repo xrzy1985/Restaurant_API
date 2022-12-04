@@ -31,7 +31,7 @@ namespace Restaurant_API.Controllers
                     for (int i = 0; i < dataTable.Rows.Count; i++)
                     {
                         DataRow data = dataTable.Rows[i];
-                        string hoursSql = $"select * from storeHours where storeId = {data["storeId"]}";
+                        string hoursSql = $"select * from storeHours where storeId = '{data["storeId"]}'";
                         DataTable storeHoursDataTable = new GetQuery(hoursSql, _config).GetDataTable();
                         Dictionary<string, List<string>> hours = new Dictionary<string, List<string>>();
                         for (int j = 0; j < storeHoursDataTable.Rows.Count; j++)
@@ -65,7 +65,7 @@ namespace Restaurant_API.Controllers
                             }
                         }
                         stores.Add(new Store(
-                            Convert.ToInt16(data["storeId"]),
+                            Convert.ToString(data["storeId"]),
                             Convert.ToString(data["storeName"]),
                             Convert.ToString(data["address1"]),
                             Convert.ToString(data["address2"]),
