@@ -1,8 +1,14 @@
 ### Restaurant_API  
-used for local development
 
-## ASP.net Core C#  
-Version 0.1.20
+## Project Specs 
+ASP.net Core C#  
+
+## Version
+0.1.20  
+
+## Project Details  
+Used for local development to build out a mock restaurant application  
+Going to be utlitized for a react mobile project, and a desktop Angular project  
 
 # Paths  
 GET					: /api/users  
