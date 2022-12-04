@@ -127,7 +127,64 @@ namespace Restaurant_API.Controllers
         [HttpDelete("{uuid}")]
         public ActionResult<object> DeleteUser(string uuid)
         {
-            return new Dictionary<string, object>() { { "key", $"{uuid}" } };
+            try
+            {
+                DataTable dataTable =
+                    new GetQuery($"select * from users where uuid = '{uuid}';", _config).GetDataTable();
+                DataRow data = dataTable.Rows[0];
+                if (data != null)
+                {
+                    string deleteUserSql = $"delete from users where uuid='{uuid}'";
+                    try
+                    {
+                        SqlDataAdapter adapter = new SqlDataAdapter();
+                        SqlConnection connection = new SqlConnection(_config.GetConnectionString("Restaurant").ToString());
+                        SqlCommand command = new SqlCommand();
+                        connection.Open();
+                        command = new SqlCommand(deleteUserSql, connection);
+                        adapter.InsertCommand = command;
+                        adapter.InsertCommand.ExecuteNonQuery();
+                        connection.Close();
+                        try
+                        {
+                            DataTable dt = new GetQuery($"select * from users where uuid = '{uuid}';", _config).GetDataTable();
+                            if (dt.Rows.Count < 1)
+                            {
+                                return new Dictionary<string, object>()
+                                {
+                                    { "status", 202 },
+                                    { "message", "The user was successfully deleted." }
+                                };
+                            } else
+                            {
+                                return new Dictionary<string, object>()
+                                {
+                                    { "status", 400 },
+                                    { "message", "There was an issue removing the user." }
+                                };
+                            }
+                        } catch(Exception ex)
+                        {
+                            return new ErrorResponse(500, ex.Message);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        return new ErrorResponse(500, ex.Message);
+                    }
+                }
+                else
+                {
+                    return new Dictionary<string, object>()
+                    {
+                        { "status", 404 },
+                        { "message", "No user exists with that UUID." }
+                    };
+                }
+            } catch(Exception ex)
+            {
+                return new ErrorResponse(500, ex.Message);
+            }
         }
     }
 }
