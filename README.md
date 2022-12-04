@@ -1,10 +1,10 @@
 ### Restaurant_API  
 
-## Project Specs 
-ASP.net Core C#  
+## Version  
+0.1.21
 
-## Version
-0.1.20  
+## Project Specs  
+ASP.net Core C#  
 
 ## Project Details  
 Used for local development to build out a mock restaurant application  
