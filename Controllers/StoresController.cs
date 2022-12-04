@@ -31,6 +31,12 @@ namespace Restaurant_API.Controllers
                     for (int i = 0; i < dataTable.Rows.Count; i++)
                     {
                         DataRow data = dataTable.Rows[i];
+                        if (Convert.ToString(data["storeId"]).Contains(";") ||
+                            Convert.ToString(data["storeId"]).Contains("drop") ||
+                            string.IsNullOrEmpty(Convert.ToString(data["storeId"])))
+                        {
+                            return new ErrorResponse(500, "There was an error with the storeId parameter.");
+                        }
                         string hoursSql = $"select * from storeHours where storeId = '{data["storeId"]}'";
                         DataTable storeHoursDataTable = new GetQuery(hoursSql, _config).GetDataTable();
                         Dictionary<string, List<string>> hours = new Dictionary<string, List<string>>();

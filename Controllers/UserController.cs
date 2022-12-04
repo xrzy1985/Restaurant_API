@@ -4,6 +4,7 @@ using Microsoft.Data.SqlClient;
 using Restaurant_API.models;
 using Restaurant_API.queries;
 using Restaurant_API.response;
+using System;
 using System.Data;
 
 namespace Restaurant_API.Controllers
@@ -23,6 +24,10 @@ namespace Restaurant_API.Controllers
         {
             try
             {
+                if (uuid.Contains(";") || uuid.Contains("drop") || string.IsNullOrEmpty(uuid))
+                {
+                    return new ErrorResponse(500, "There was an error with the uuid parameter.");
+                }
                 DataTable dataTable = new GetQuery($"select uuid, name, email, dob from users where uuid = '{uuid}'", _config).GetDataTable();
                 if (dataTable != null)
                 {
@@ -86,6 +91,12 @@ namespace Restaurant_API.Controllers
         {
             try
             {
+                if (Convert.ToString(user.Uuid).Contains(";") ||
+                    Convert.ToString(user.Uuid).Contains("drop") ||
+                    string.IsNullOrEmpty(Convert.ToString(user.Uuid)))
+                {
+                    return new ErrorResponse(500, "There was an error with the uuid parameter.");
+                }
                 DataTable dataTable = 
                     new GetQuery($"select uuid, name, email, dob from users where uuid = '{user.Uuid}';", _config).GetDataTable();
                 DataRow data = dataTable.Rows[0];
@@ -129,6 +140,10 @@ namespace Restaurant_API.Controllers
         {
             try
             {
+                if (uuid.Contains(";") || uuid.Contains("drop") || string.IsNullOrEmpty(uuid))
+                {
+                    return new ErrorResponse(500, "There was an error with the uuid parameter.");
+                }
                 DataTable dataTable =
                     new GetQuery($"select * from users where uuid = '{uuid}';", _config).GetDataTable();
                 DataRow data = dataTable.Rows[0];
