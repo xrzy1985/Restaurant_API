@@ -2,7 +2,7 @@
 used for local development
 
 ## ASP.net Core C#  
-Version 0.1.15
+Version 0.1.16
 
 # Paths  
 GET					: /api/users  
