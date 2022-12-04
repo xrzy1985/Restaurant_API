@@ -134,14 +134,13 @@ namespace Restaurant_API.Controllers
                 DataRow data = dataTable.Rows[0];
                 if (data != null)
                 {
-                    string deleteUserSql = $"delete from users where uuid='{uuid}'";
                     try
                     {
                         SqlDataAdapter adapter = new SqlDataAdapter();
                         SqlConnection connection = new SqlConnection(_config.GetConnectionString("Restaurant").ToString());
                         SqlCommand command = new SqlCommand();
                         connection.Open();
-                        command = new SqlCommand(deleteUserSql, connection);
+                        command = new SqlCommand($"delete from users where uuid='{uuid}'", connection);
                         adapter.InsertCommand = command;
                         adapter.InsertCommand.ExecuteNonQuery();
                         connection.Close();
