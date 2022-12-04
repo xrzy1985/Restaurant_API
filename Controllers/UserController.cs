@@ -24,7 +24,7 @@ namespace Restaurant_API.Controllers
         {
             try
             {
-                if (uuid.Contains(";") || uuid.Contains("drop") || string.IsNullOrEmpty(uuid))
+                if (new ParamaterCheck().IsMalicious(uuid))
                 {
                     return new ErrorResponse(500, "There was an error with the uuid parameter.");
                 }

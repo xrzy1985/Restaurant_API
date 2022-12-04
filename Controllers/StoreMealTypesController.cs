@@ -20,7 +20,7 @@ namespace Restaurant_API.Controllers
         [HttpGet("{storeId}")]
         public ActionResult<object> GetStoreMealTypes(string storeId)
         {
-            if (storeId.Contains(";") || storeId.Contains("drop") || string.IsNullOrEmpty(storeId))
+            if (new ParamaterCheck().IsMalicious(storeId))
             {
                 return new ErrorResponse(500, "There was an error with the storeId parameter.");
             }

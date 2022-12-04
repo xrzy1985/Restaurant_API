@@ -20,9 +20,9 @@ namespace Restaurant_API.Controllers
         [HttpGet("{storeId}")]
         public ActionResult<object> GetDispositions(string storeId)
         {
-            if (storeId.Contains(";") || storeId.Contains("drop") || string.IsNullOrEmpty(storeId))
+            if (new ParamaterCheck().IsMalicious(storeId))
             {
-                return new ErrorResponse(500, "There was an error with the disposition parameter.");
+                return new ErrorResponse(500, "There was an error with the storeId parameter.");
             }
             string dispositionsSqlString = $"select * from storesDispositions where storeId = '{storeId}';";
             try
