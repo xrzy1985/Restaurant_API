@@ -17,7 +17,7 @@
             StoreId = storeId;
             StoreName = storeName;
             Address1 = address1;
-            Address2 = address2 == "" ? null : address2;
+            Address2 = string.IsNullOrEmpty(address2) ? null : address2;
             City = city;
             State = state;
             PostalCode = postalCode;
