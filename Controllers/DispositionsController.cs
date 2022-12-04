@@ -24,7 +24,7 @@ namespace Restaurant_API.Controllers
             {
                 return new ErrorResponse(500, "There was an error with the disposition parameter.");
             }
-            string dispositionsSqlString = $"select * from disposition where storeId = '{storeId}';";
+            string dispositionsSqlString = $"select * from storesDispositions where storeId = '{storeId}';";
             try
             {
                 DataTable dt = new GetQuery(dispositionsSqlString, _config).GetDataTable();
