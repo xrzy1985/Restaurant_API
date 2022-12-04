@@ -5,8 +5,8 @@ used for local development
 Version 0.1.9
 
 # Paths  
-GET			: /api/users  
-GET, DELETE : /api/user/:uuid  
-POST, PUT	: /api/user  
-GET			: /api/stores  
-GET			: /api/store/:storeId  
+GET					: /api/users  
+GET, DELETE			: /api/user/:uuid  
+POST, PUT			: /api/user  
+GET					: /api/stores  
+GET					: /api/store/:storeId  
