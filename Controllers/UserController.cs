@@ -24,7 +24,7 @@ namespace Restaurant_API.Controllers
         {
             try
             {
-                if (new ParamaterCheck().IsMalicious(uuid))
+                if (new ParameterCheck().IsMalicious(uuid))
                 {
                     return new ErrorResponse(500, "There was an error with the uuid parameter.");
                 }

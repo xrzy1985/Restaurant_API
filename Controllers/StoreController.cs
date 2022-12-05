@@ -21,7 +21,7 @@ namespace Restaurant_API.Controllers
         [HttpGet("{storeId}")]
         public ActionResult<object> GetStore(string storeId)
         {
-            if (new ParamaterCheck().IsMalicious(storeId))
+            if (new ParameterCheck().IsMalicious(storeId))
             {
                 return new ErrorResponse(500, "There was an error with the disposition parameter.");
             }

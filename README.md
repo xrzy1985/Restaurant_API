@@ -1,7 +1,7 @@
 ### Restaurant_API  
 
 ## Version  
-0.1.21
+0.1.22
 
 ## Project Specs  
 ASP.net Core C#  
@@ -14,6 +14,7 @@ Going to be utlitized for a react mobile project, and a desktop Angular project
 GET					: /api/users  
 GET, DELETE			: /api/user/:uuid  
 POST, PUT			: /api/user  
+POST				: /api/login  
 GET					: /api/store/:storeId  
 GET					: /api/stores  
 GET					: /api/stores/dispositions/:storeId  
