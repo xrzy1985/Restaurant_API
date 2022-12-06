@@ -1,6 +1,4 @@
-﻿using Restaurant_API.response;
-
-namespace Restaurant_API.queries
+﻿namespace Restaurant_API.queries
 {
     public class ParameterCheck
     {

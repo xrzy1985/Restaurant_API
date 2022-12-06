@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Restaurant_API.response;
+﻿using Microsoft.AspNetCore.Mvc;
 using Restaurant_API.queries;
 using Restaurant_API.models;
 using System.Data;
@@ -23,7 +21,7 @@ namespace Restaurant_API.Controllers
         {
             if (new ParameterCheck().IsMalicious(storeId))
             {
-                return new ErrorResponse(500, "There was an error with the disposition parameter.");
+                return Unauthorized("There was an error with the disposition parameter.");
             }
             string storeSqlString =
                 $"select storeId,storeName,address1,address2,city,state,postalCode from stores where storeId='{storeId}';";
@@ -68,11 +66,11 @@ namespace Restaurant_API.Controllers
                     }
                     catch (Exception ex)
                     {
-                        new ErrorResponse(500, ex.Message);
+                        StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
                     }
-                    return new Dictionary<string, object>()
+                    return Ok(new Dictionary<string, object>()
                     {
-                        { "status", 200 },
+                        { "status", StatusCodes.Status200OK },
                         { "data", new Store(
                                 Convert.ToString(dt.Rows[0]["storeId"]),
                                 Convert.ToString(dt.Rows[0]["storeName"]),
@@ -84,18 +82,14 @@ namespace Restaurant_API.Controllers
                                 hours
                             )
                         }
-                    };
+                    });
                 }
             }
             catch(Exception ex)
             {
-                new ErrorResponse(500, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
-            return new Dictionary<string, object>()
-            {
-                { "status", 200 },
-                { "message", "There was no associated store with the storeId" }
-            };
+            return NoContent();
         }
     }
 }

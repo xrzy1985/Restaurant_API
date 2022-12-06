@@ -1,9 +1,6 @@
-﻿using Microsoft.AspNetCore.DataProtection.KeyManagement;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Restaurant_API.models;
 using Restaurant_API.queries;
-using Restaurant_API.response;
 using System.Data;
 
 namespace Restaurant_API.Controllers
@@ -31,13 +28,11 @@ namespace Restaurant_API.Controllers
                     for (int i = 0; i < dataTable.Rows.Count; i++)
                     {
                         DataRow data = dataTable.Rows[i];
-                        if (Convert.ToString(data["storeId"]).Contains(";") ||
-                            Convert.ToString(data["storeId"]).Contains("drop") ||
-                            string.IsNullOrEmpty(Convert.ToString(data["storeId"])))
+                        if (new ParameterCheck().IsMalicious(Convert.ToString(data["storeId"])))
                         {
-                            return new ErrorResponse(500, "There was an error with the storeId parameter.");
+                            return Unauthorized("There was an error with the storeId parameter.");
                         }
-                        string hoursSql = $"select * from storeHours where storeId = '{data["storeId"]}'";
+                        string hoursSql = $"select * from storeHours where storeId = '{Convert.ToString(data["storeId"])}'";
                         DataTable storeHoursDataTable = new GetQuery(hoursSql, _config).GetDataTable();
                         Dictionary<string, List<string>> hours = new Dictionary<string, List<string>>();
                         for (int j = 0; j < storeHoursDataTable.Rows.Count; j++)
@@ -67,7 +62,7 @@ namespace Restaurant_API.Controllers
                                 }
                             } else
                             {
-                                return new ErrorResponse(400, "There was an issue fetching the stores data.");
+                                return BadRequest("There was an issue fetching the stores data.");
                             }
                         }
                         stores.Add(new Store(
@@ -81,14 +76,17 @@ namespace Restaurant_API.Controllers
                             hours
                         ));
                     }
-                    return new GetResponse(200, stores);
+                    return Ok(new Dictionary<string, object> {
+                        { "status", StatusCodes.Status200OK },
+                        { "data", stores }
+                    });
                 } else
                 {
-                    return new ErrorResponse(400, "There was an issue fetching the stores data.");
+                    return BadRequest("There was an issue fetching the stores data.");
                 }
             } catch (Exception ex)
             {
-                return new ErrorResponse(500, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
     }

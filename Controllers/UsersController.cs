@@ -1,7 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Restaurant_API.models;
-using Restaurant_API.response;
 using Restaurant_API.queries;
 using System.Data;
 
@@ -42,10 +40,14 @@ namespace Restaurant_API.Controllers
                         }
                     }
                 }
-                return new GetResponse(200, new Users(usersList));
+                return Ok(new Dictionary<string, object>()
+                {
+                    { "status", StatusCodes.Status200OK },
+                    { "data", usersList }
+                });
             } catch(Exception ex)
             {
-                return new ErrorResponse(500, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 

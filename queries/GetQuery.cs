@@ -1,9 +1,5 @@
 ﻿using System.Data;
-using System.Globalization;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
-using Restaurant_API.models;
-using Restaurant_API.response;
 
 namespace Restaurant_API.queries
 {

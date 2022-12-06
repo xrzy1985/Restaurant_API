@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Restaurant_API.models;
 using Restaurant_API.queries;
-using Restaurant_API.response;
 using System.Data;
 
 namespace Restaurant_API.Controllers
@@ -22,7 +20,7 @@ namespace Restaurant_API.Controllers
         {
             if (new ParameterCheck().IsMalicious(storeId))
             {
-                return new ErrorResponse(500, "There was an error with the storeId parameter.");
+                return Unauthorized("There was an error with the storeId parameter.");
             }
             try
             {
@@ -41,24 +39,24 @@ namespace Restaurant_API.Controllers
                             ));
                         }
                     }
-                    return new Dictionary<string, object>()
+                    return Ok(new Dictionary<string, object>()
                     {
-                        { "status", 200 },
+                        { "status", StatusCodes.Status200OK },
                         { "storeId", storeId },
                         { "data", mealTypes }
-                    };
+                    });
                 } else
                 {
-                    return new Dictionary<string, object>()
+                    return Ok(new Dictionary<string, object>()
                     {
-                        { "status", 200 },
+                        { "status", StatusCodes.Status200OK },
                         { "storeId", storeId },
                         { "data", mealTypes }
-                    };
+                    });
                 }
             } catch (Exception ex)
             {
-                return new ErrorResponse(500, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
     }

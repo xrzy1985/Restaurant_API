@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Restaurant_API.models;
 using Restaurant_API.queries;
-using Restaurant_API.response;
 using System.Data;
 
 namespace Restaurant_API.Controllers
@@ -25,7 +23,7 @@ namespace Restaurant_API.Controllers
                 ParameterCheck test = new ParameterCheck();
                 if (test.IsMalicious(login.Email) && test.IsMalicious(login.Password))
                 {
-                    return new ErrorResponse(500, "There was an error with the login information provided.");
+                    return Unauthorized("There was an error with the login information provided.");
                 }
                 string sqlString = $"select uuid from users where email = '{login.Email}';";
                 DataTable dt = new GetQuery(sqlString, _config).GetDataTable();
@@ -40,45 +38,45 @@ namespace Restaurant_API.Controllers
                         {
                             if (Convert.ToString(data.Rows[0]["password"]) == login.Password)
                             {
-                                return new Dictionary<string, object>()
-                            {
-                                { "status", 200 },
-                                { "message", "Login was successful" },
-                                { "token", "create the token to return here" }
-                            };
+                                return Ok(new Dictionary<string, object>()
+                                {
+                                    { "status", StatusCodes.Status200OK },
+                                    { "message", "Login was successful" },
+                                    { "token", "create the token to return here" }
+                                });
                             }
                             else
                             {
-                                return new Dictionary<string, object>()
-                            {
-                                { "status", 401 },
-                                { "message", "Login was unsuccessful, Invalid password provided" }
-                            };
+                                return Unauthorized(new Dictionary<string, object>()
+                                {
+                                    { "status", StatusCodes.Status401Unauthorized },
+                                    { "message", "Login was unsuccessful, Invalid password provided" }
+                                });
                             }
                         }
                         else
                         {
-                            return new Dictionary<string, object>()
-                        {
-                            { "status", 404 },
-                            { "message", "Login was unsuccessful, no user data found" }
-                        };
+                            return NotFound(new Dictionary<string, object>()
+                            {
+                                { "status", StatusCodes.Status404NotFound },
+                                { "message", "Login was unsuccessful, no user data found" }
+                            });
                         }
                     } catch (Exception ex)
                     {
-                        return new ErrorResponse(500, ex.Message);
+                        return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
                     }
                 } else
                 {
-                    return new Dictionary<string, object>()
+                    return NotFound(new Dictionary<string, object>()
                     {
-                        { "status", 404 },
+                        { "status", StatusCodes.Status404NotFound },
                         { "message", "Login Unsuccessful, no user data found" }
-                    };
+                    });
                 }
             } catch(Exception ex)
             {
-                return new ErrorResponse(500, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
     }

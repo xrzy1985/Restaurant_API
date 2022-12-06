@@ -1,9 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Restaurant_API.models;
 using Restaurant_API.queries;
-using Restaurant_API.response;
 using System;
 using System.Data;
 
@@ -26,25 +24,31 @@ namespace Restaurant_API.Controllers
             {
                 if (new ParameterCheck().IsMalicious(uuid))
                 {
-                    return new ErrorResponse(500, "There was an error with the uuid parameter.");
+                    return Unauthorized("There was an error with the uuid parameter.");
                 }
                 DataTable dataTable = new GetQuery($"select uuid, name, email, dob from users where uuid = '{uuid}'", _config).GetDataTable();
                 if (dataTable != null)
                 {
                     DataRow data = dataTable.Rows[0];
-                    return new GetResponse(200, new User(
-                        Convert.ToString(data["uuid"]),
-                        Convert.ToString(data["name"]),
-                        Convert.ToString(data["email"]),
-                        (DateTime)data["dob"]
-                    ));
+                    return Ok(new Dictionary<string, object> {
+                        { "status", StatusCodes.Status200OK },
+                        { "data", new User(
+                            Convert.ToString(data["uuid"]),
+                            Convert.ToString(data["name"]),
+                            Convert.ToString(data["email"]),
+                            (DateTime)data["dob"]
+                        )}
+                    });
                 } else
                 {
-                    return new ErrorResponse(404, "There was an error fetching the data.");
+                    return NotFound(new Dictionary<string, object>() {
+                        { "status", StatusCodes.Status404NotFound },
+                        { "message", "There was an error fetching the data." }
+                    });
                 }
             } catch(Exception ex)
             {
-                return new ErrorResponse(500, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 
@@ -74,15 +78,11 @@ namespace Restaurant_API.Controllers
                 adapter.InsertCommand = command;
                 adapter.InsertCommand.ExecuteNonQuery();
                 connection.Close();
-                return new Dictionary<string, object>()
-                {
-                    { "status", 201 },
-                    { "message", "The user was created successfully." }
-                };
+                return Created("The user was created successfully.", null);
             }
             catch (Exception ex)
             {
-                return new ErrorResponse(500, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 
@@ -91,11 +91,9 @@ namespace Restaurant_API.Controllers
         {
             try
             {
-                if (Convert.ToString(user.Uuid).Contains(";") ||
-                    Convert.ToString(user.Uuid).Contains("drop") ||
-                    string.IsNullOrEmpty(Convert.ToString(user.Uuid)))
+                if (new ParameterCheck().IsMalicious(user.Uuid))
                 {
-                    return new ErrorResponse(500, "There was an error with the uuid parameter.");
+                    return Unauthorized("There was an error with the uuid parameter.");
                 }
                 DataTable dataTable = 
                     new GetQuery($"select uuid, name, email, dob from users where uuid = '{user.Uuid}';", _config).GetDataTable();
@@ -115,23 +113,15 @@ namespace Restaurant_API.Controllers
                     adapter.InsertCommand = command;
                     adapter.InsertCommand.ExecuteNonQuery();
                     connection.Close();
-                    return new Dictionary<string, object>()
-                    {
-                        { "status", 204 },
-                        { "message", "The user was successfully updated." }
-                    };
+                    return StatusCode(StatusCodes.Status204NoContent, "The user was successfully updated.");
                 }
                 else
                 {
-                    return new Dictionary<string, object>()
-                    {
-                        { "status", 404 },
-                        { "message", "No user exists with that UUID." }
-                    };
+                    return NotFound("No user exists with that UUID.");
                 }
             } catch(Exception ex)
             {
-                return new ErrorResponse(500, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 
@@ -140,9 +130,9 @@ namespace Restaurant_API.Controllers
         {
             try
             {
-                if (uuid.Contains(";") || uuid.Contains("drop") || string.IsNullOrEmpty(uuid))
+                if (new ParameterCheck().IsMalicious(uuid))
                 {
-                    return new ErrorResponse(500, "There was an error with the uuid parameter.");
+                    return Unauthorized("There was an error with the uuid parameter.");
                 }
                 DataTable dataTable =
                     new GetQuery($"select * from users where uuid = '{uuid}';", _config).GetDataTable();
@@ -164,40 +154,36 @@ namespace Restaurant_API.Controllers
                             DataTable dt = new GetQuery($"select * from users where uuid = '{uuid}';", _config).GetDataTable();
                             if (dt.Rows.Count < 1)
                             {
-                                return new Dictionary<string, object>()
+                                return StatusCode(StatusCodes.Status202Accepted, new Dictionary<string, object>()
                                 {
-                                    { "status", 202 },
+                                    { "status", StatusCodes.Status202Accepted },
                                     { "message", "The user was successfully deleted." }
-                                };
+                                });
                             } else
                             {
-                                return new Dictionary<string, object>()
-                                {
-                                    { "status", 400 },
-                                    { "message", "There was an issue removing the user." }
-                                };
+                                return BadRequest("There was an issue removing the user.");
                             }
                         } catch(Exception ex)
                         {
-                            return new ErrorResponse(500, ex.Message);
+                            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
                         }
                     }
                     catch (Exception ex)
                     {
-                        return new ErrorResponse(500, ex.Message);
+                        return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
                     }
                 }
                 else
                 {
-                    return new Dictionary<string, object>()
+                    return NotFound(new Dictionary<string, object>()
                     {
-                        { "status", 404 },
+                        { "status", StatusCodes.Status404NotFound },
                         { "message", "No user exists with that UUID." }
-                    };
+                    });
                 }
             } catch(Exception ex)
             {
-                return new ErrorResponse(500, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
     }
