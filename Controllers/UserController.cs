@@ -12,9 +12,11 @@ namespace Restaurant_API.Controllers
     public class UserController : ControllerBase
     {
         public readonly IConfiguration _config;
+        private string _sqlString;
         public UserController(IConfiguration config)
         {
             _config = config;
+            _sqlString = "";
         }
 
         [HttpGet("{uuid}")]
@@ -55,15 +57,14 @@ namespace Restaurant_API.Controllers
         [HttpPost]
         public ActionResult<object> PostUser(NewUser user)
         {
-            string userSql = $"insert into users (uuid, name, email, dob) values (@Uuid, @Name, @Email, @Dob)";
-            string passSql = $"insert into login (uuid, password) values(@Uuid, @Password)";
+            _sqlString = $"insert into users (uuid, name, email, dob) values (@Uuid, @Name, @Email, @Dob)";
             SqlDataAdapter adapter = new SqlDataAdapter();
             SqlConnection connection = new SqlConnection(_config.GetConnectionString("Restaurant").ToString());
             SqlCommand command = new SqlCommand();
             try
             {
                 connection.Open();
-                command = new SqlCommand(userSql, connection);
+                command = new SqlCommand(_sqlString, connection);
                 string userUuid = Guid.NewGuid().ToString();
                 command.Parameters.Add("@Uuid", SqlDbType.VarChar, 50).Value = userUuid;
                 command.Parameters.Add("@Name", SqlDbType.VarChar, 50).Value = user.Name;
@@ -72,7 +73,8 @@ namespace Restaurant_API.Controllers
                     DateTime.Parse(DateOnly.FromDateTime(user.Dob).ToString()).ToString("yyyy-MM-dd");
                 adapter.InsertCommand = command;
                 adapter.InsertCommand.ExecuteNonQuery();
-                command = new SqlCommand(passSql, connection);
+                _sqlString = $"insert into login (uuid, password) values(@Uuid, @Password)";
+                command = new SqlCommand(_sqlString, connection);
                 command.Parameters.Add("@Uuid", SqlDbType.VarChar, 50).Value = userUuid;
                 command.Parameters.Add("@Password", SqlDbType.VarChar, 50).Value = user.Password;
                 adapter.InsertCommand = command;
@@ -100,12 +102,12 @@ namespace Restaurant_API.Controllers
                 DataRow data = dataTable.Rows[0];
                 if (data != null)
                 {
-                    string updateSqlString = $"update users set name=@Name,email=@Email,dob=@Dob WHERE uuid='{user.Uuid}';";
+                    _sqlString = $"update users set name=@Name,email=@Email,dob=@Dob WHERE uuid='{user.Uuid}';";
                     SqlDataAdapter adapter = new SqlDataAdapter();
                     SqlConnection connection = new SqlConnection(_config.GetConnectionString("Restaurant").ToString());
                     SqlCommand command = new SqlCommand();
                     connection.Open();
-                    command = new SqlCommand(updateSqlString, connection);
+                    command = new SqlCommand(_sqlString, connection);
                     command.Parameters.Add("@Name", SqlDbType.VarChar, 50).Value = user.Name;
                     command.Parameters.Add("@Email", SqlDbType.VarChar, 50).Value = user.Email;
                     command.Parameters.Add("@Dob", SqlDbType.VarChar, 50).Value =

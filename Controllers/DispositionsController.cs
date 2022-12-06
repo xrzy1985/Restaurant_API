@@ -10,9 +10,11 @@ namespace Restaurant_API.Controllers
     public class DispositionsController : ControllerBase
     {
         public readonly IConfiguration _config;
+        private string _sqlString;
         public DispositionsController(IConfiguration config)
         {
             _config = config;
+            _sqlString = "";
         }
 
         [HttpGet("{storeId}")]
@@ -22,10 +24,10 @@ namespace Restaurant_API.Controllers
             {
                 return Unauthorized("There was an error with the storeId parameter.");
             }
-            string dispositionsSqlString = $"select * from storesDispositions where storeId = '{storeId}';";
+            _sqlString = $"select * from storesDispositions where storeId = '{storeId}';";
             try
             {
-                DataTable dt = new GetQuery(dispositionsSqlString, _config).GetDataTable();
+                DataTable dt = new GetQuery(_sqlString, _config).GetDataTable();
                 if (dt.Rows.Count > 0)
                 {
                     DataRow data = dt.Rows[0];

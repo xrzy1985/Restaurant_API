@@ -10,18 +10,20 @@ namespace Restaurant_API.Controllers
     public class StoresController : ControllerBase
     {
         public readonly IConfiguration _config;
+        private string _sqlString;
         public StoresController(IConfiguration config)
         {
             _config = config;
+            _sqlString = "";
         }
 
         [HttpGet]
         public ActionResult<object> GetStores()
         {
-            string storesSql = "select storeId, storeName, address1, address2, city, state, postalCode from stores";
+            _sqlString = "select storeId, storeName, address1, address2, city, state, postalCode from stores";
             try
             {
-                DataTable dataTable = new GetQuery(storesSql, _config).GetDataTable();
+                DataTable dataTable = new GetQuery(_sqlString, _config).GetDataTable();
                 List<Store> stores = new List<Store>();
                 if (dataTable != null)
                 {
@@ -32,8 +34,8 @@ namespace Restaurant_API.Controllers
                         {
                             return Unauthorized("There was an error with the storeId parameter.");
                         }
-                        string hoursSql = $"select * from storeHours where storeId = '{Convert.ToString(data["storeId"])}'";
-                        DataTable storeHoursDataTable = new GetQuery(hoursSql, _config).GetDataTable();
+                        _sqlString = $"select * from storeHours where storeId = '{Convert.ToString(data["storeId"])}'";
+                        DataTable storeHoursDataTable = new GetQuery(_sqlString, _config).GetDataTable();
                         Dictionary<string, List<string>> hours = new Dictionary<string, List<string>>();
                         for (int j = 0; j < storeHoursDataTable.Rows.Count; j++)
                         {

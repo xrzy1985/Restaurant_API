@@ -10,10 +10,12 @@ namespace Restaurant_API.Controllers
     public class LoginController : ControllerBase
     {
         // @TODO: Implement JWT creation, JWT Validation, JWT Revalidation
-        IConfiguration _config;
+        public readonly IConfiguration _config;
+        private string _sqlString;
         public LoginController(IConfiguration config)
         {
             _config = config;
+            _sqlString = "";
         }
 
         [HttpPost]
@@ -25,46 +27,40 @@ namespace Restaurant_API.Controllers
                 {
                     return Unauthorized("There was an error with the login information provided.");
                 }
-                string sqlString = $"select uuid from users where email = '{login.Email}';";
-                DataTable dt = new GetQuery(sqlString, _config).GetDataTable();
+                _sqlString = $"select uuid from users where email = '{login.Email}';";
+                DataTable dt = new GetQuery(_sqlString, _config).GetDataTable();
                 if (dt != null && dt.Rows.Count > 0)
                 {
                     string uuid = Convert.ToString(dt.Rows[0]["Uuid"]);
-                    sqlString = $"select u.email,l.password from users as u inner join login as l on u.uuid='{uuid}' and l.uuid='{uuid}';";
-                    try
+                    _sqlString = $"select u.email,l.password from users as u inner join login as l on u.uuid='{uuid}' and l.uuid='{uuid}';";
+                    DataTable data = new GetQuery(_sqlString, _config).GetDataTable();
+                    if (data != null && data.Rows.Count > 0)
                     {
-                        DataTable data = new GetQuery(sqlString, _config).GetDataTable();
-                        if (data != null && data.Rows.Count > 0)
+                        if (Convert.ToString(data.Rows[0]["password"]) == login.Password)
                         {
-                            if (Convert.ToString(data.Rows[0]["password"]) == login.Password)
+                            return Ok(new Dictionary<string, object>()
                             {
-                                return Ok(new Dictionary<string, object>()
-                                {
-                                    { "status", StatusCodes.Status200OK },
-                                    { "message", "Login was successful" },
-                                    { "token", "create the token to return here" }
-                                });
-                            }
-                            else
-                            {
-                                return Unauthorized(new Dictionary<string, object>()
-                                {
-                                    { "status", StatusCodes.Status401Unauthorized },
-                                    { "message", "Login was unsuccessful, Invalid password provided" }
-                                });
-                            }
+                                { "status", StatusCodes.Status200OK },
+                                { "message", "Login was successful" },
+                                { "token", "create the token to return here" }
+                            });
                         }
                         else
                         {
-                            return NotFound(new Dictionary<string, object>()
+                            return Unauthorized(new Dictionary<string, object>()
                             {
-                                { "status", StatusCodes.Status404NotFound },
-                                { "message", "Login was unsuccessful, no user data found" }
+                                { "status", StatusCodes.Status401Unauthorized },
+                                { "message", "Login was unsuccessful, Invalid password provided" }
                             });
                         }
-                    } catch (Exception ex)
+                    }
+                    else
                     {
-                        return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                        return NotFound(new Dictionary<string, object>()
+                        {
+                            { "status", StatusCodes.Status404NotFound },
+                            { "message", "Login was unsuccessful, no user data found" }
+                        });
                     }
                 } else
                 {

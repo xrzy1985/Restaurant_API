@@ -9,11 +9,12 @@ namespace Restaurant_API.Controllers
     [ApiController]
     public class StoreController : ControllerBase
     {
-        IConfiguration _config;
-
+        public readonly IConfiguration _config;
+        private string _sqlString;
         public StoreController(IConfiguration config)
         {
-            _config=config;
+            _config = config;
+            _sqlString = "";
         }
 
         [HttpGet("{storeId}")]
@@ -23,11 +24,10 @@ namespace Restaurant_API.Controllers
             {
                 return Unauthorized("There was an error with the disposition parameter.");
             }
-            string storeSqlString =
-                $"select storeId,storeName,address1,address2,city,state,postalCode from stores where storeId='{storeId}';";
+            _sqlString = $"select storeId,storeName,address1,address2,city,state,postalCode from stores where storeId='{storeId}';";
             try
             {
-                DataTable dt = new GetQuery(storeSqlString, _config).GetDataTable();
+                DataTable dt = new GetQuery(_sqlString, _config).GetDataTable();
                 if (dt.Rows.Count > 0)
                 {
                     Dictionary<string, List<string>> hours = new Dictionary<string, List<string>>();

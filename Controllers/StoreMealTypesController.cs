@@ -10,9 +10,11 @@ namespace Restaurant_API.Controllers
     public class StoreMealTypesController : ControllerBase
     {
         public readonly IConfiguration _config;
+        private string _sqlString;
         public StoreMealTypesController(IConfiguration config)
         {
             _config = config;
+            _sqlString = "";
         }
 
         [HttpGet("{storeId}")]
@@ -24,8 +26,8 @@ namespace Restaurant_API.Controllers
             }
             try
             {
-                string mealTypeSqlString = $"select type, time from storeMealTypes where storeId = '{storeId}';";
-                DataRowCollection data = new GetQuery(mealTypeSqlString, _config).GetDataTable().Rows;
+                _sqlString = $"select type, time from storeMealTypes where storeId = '{storeId}';";
+                DataRowCollection data = new GetQuery(_sqlString, _config).GetDataTable().Rows;
                 List<StoreMealType> mealTypes = new List<StoreMealType>();
                 if (data.Count > 0)
                 {
