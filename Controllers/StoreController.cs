@@ -5,7 +5,7 @@ using Microsoft.Data.SqlClient;
 
 namespace Restaurant_API.Controllers
 {
-    [Route("api/store")]
+    [Route("store")]
     [ApiController]
     public class StoreController : ControllerBase
     {

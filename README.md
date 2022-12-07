@@ -1,7 +1,7 @@
 ### Restaurant_API  
 
 ## Version  
-0.3.1
+0.3.2
 
 ## Project Specs  
 ASP.net Core C#  

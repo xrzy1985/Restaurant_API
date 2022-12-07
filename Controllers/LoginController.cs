@@ -5,7 +5,7 @@ using System.Data;
 
 namespace Restaurant_API.Controllers
 {
-    [Route("api/login")]
+    [Route("login")]
     [ApiController]
     public class LoginController : ControllerBase
     {
