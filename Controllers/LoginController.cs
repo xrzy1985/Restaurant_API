@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Restaurant_API.models;
-using Restaurant_API.queries;
 using System.Data;
 
 namespace Restaurant_API.Controllers
@@ -10,33 +10,31 @@ namespace Restaurant_API.Controllers
     public class LoginController : ControllerBase
     {
         // @TODO: Implement JWT creation, JWT Validation, JWT Revalidation
-        public readonly IConfiguration _config;
-        private string _sqlString;
+        private SqlConnection _conn;
+        private readonly IConfiguration _config;
         public LoginController(IConfiguration config)
         {
             _config = config;
-            _sqlString = "";
+            _conn = new SqlConnection(_config.GetConnectionString("Restaurant").ToString());
         }
 
         [HttpPost]
         public ActionResult<object> Login(Login login)
         {
             try {
-                ParameterCheck test = new ParameterCheck();
-                if (test.IsMalicious(login.Email) && test.IsMalicious(login.Password))
-                {
-                    return Unauthorized("There was an error with the login information provided.");
-                }
-                _sqlString = $"select uuid from users where email = '{login.Email}';";
-                DataTable dt = new GetQuery(_sqlString, _config).GetDataTable();
+                DataTable dt = new DataTable();
+                SqlDataAdapter dataAdapter = new SqlDataAdapter("select uuid from users where email = @Email;", _conn);
+                dataAdapter.SelectCommand.Parameters.Add("@Email", SqlDbType.NVarChar, 2000).Value = login.Email;
+                dataAdapter.Fill(dt);
                 if (dt != null && dt.Rows.Count > 0)
                 {
-                    string uuid = Convert.ToString(dt.Rows[0]["Uuid"]);
-                    _sqlString = $"select u.email,l.password from users as u inner join login as l on u.uuid='{uuid}' and l.uuid='{uuid}';";
-                    DataTable data = new GetQuery(_sqlString, _config).GetDataTable();
-                    if (data != null && data.Rows.Count > 0)
+                    dataAdapter = new SqlDataAdapter("select u.email,l.password from users as u inner join login as l on u.uuid=@Uuid and l.uuid=@Uuid;", _conn);
+                    dataAdapter.SelectCommand.Parameters.Add("@Uuid", SqlDbType.NVarChar, 2000).Value = Convert.ToString(dt.Rows[0]["Uuid"]);
+                    dt.Clear();
+                    dataAdapter.Fill(dt);
+                    if (dt != null && dt.Rows.Count > 0)
                     {
-                        if (Convert.ToString(data.Rows[0]["password"]) == login.Password)
+                        if (Convert.ToString(dt.Rows[0]["password"]).Equals(login.Password))
                         {
                             return Ok(new Dictionary<string, object>()
                             {
@@ -50,7 +48,7 @@ namespace Restaurant_API.Controllers
                             return Unauthorized(new Dictionary<string, object>()
                             {
                                 { "status", StatusCodes.Status401Unauthorized },
-                                { "message", "Login was unsuccessful, Invalid password provided" }
+                                { "message", "Login was unsuccessful, an invalid password provided." }
                             });
                         }
                     }
@@ -59,7 +57,7 @@ namespace Restaurant_API.Controllers
                         return NotFound(new Dictionary<string, object>()
                         {
                             { "status", StatusCodes.Status404NotFound },
-                            { "message", "Login was unsuccessful, no user data found" }
+                            { "message", "Login was unsuccessful, no user was data found." }
                         });
                     }
                 } else
@@ -67,7 +65,7 @@ namespace Restaurant_API.Controllers
                     return NotFound(new Dictionary<string, object>()
                     {
                         { "status", StatusCodes.Status404NotFound },
-                        { "message", "Login Unsuccessful, no user data found" }
+                        { "message", "Login Unsuccessful, no user was data found." }
                     });
                 }
             } catch(Exception ex)

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Restaurant_API.models;
-using Restaurant_API.queries;
 using System.Data;
 
 namespace Restaurant_API.Controllers
@@ -10,32 +10,30 @@ namespace Restaurant_API.Controllers
     public class StoresController : ControllerBase
     {
         public readonly IConfiguration _config;
-        private string _sqlString;
+        private SqlConnection _conn;
         public StoresController(IConfiguration config)
         {
             _config = config;
-            _sqlString = "";
+            _conn = new SqlConnection(_config.GetConnectionString("Restaurant").ToString());
         }
 
         [HttpGet]
         public ActionResult<object> GetStores()
         {
-            _sqlString = "select storeId, storeName, address1, address2, city, state, postalCode from stores";
             try
             {
-                DataTable dataTable = new GetQuery(_sqlString, _config).GetDataTable();
+                DataTable dataTable = new DataTable();
+                SqlDataAdapter da = new SqlDataAdapter("select storeId, storeName, address1, address2, city, state, postalCode from stores", _conn);
+                da.Fill(dataTable);
                 List<Store> stores = new List<Store>();
-                if (dataTable != null)
+                if (dataTable != null && dataTable.Rows.Count > 0)
                 {
                     for (int i = 0; i < dataTable.Rows.Count; i++)
                     {
-                        DataRow data = dataTable.Rows[i];
-                        if (new ParameterCheck().IsMalicious(Convert.ToString(data["storeId"])))
-                        {
-                            return Unauthorized("There was an error with the storeId parameter.");
-                        }
-                        _sqlString = $"select * from storeHours where storeId = '{Convert.ToString(data["storeId"])}'";
-                        DataTable storeHoursDataTable = new GetQuery(_sqlString, _config).GetDataTable();
+                        DataTable storeHoursDataTable = new DataTable();
+                        da = new SqlDataAdapter("select * from storeHours where storeId=@StoreId", _conn);
+                        da.SelectCommand.Parameters.Add("@StoreId", SqlDbType.NVarChar, 2000).Value = Convert.ToString(dataTable.Rows[i]["storeId"]);
+                        da.Fill(storeHoursDataTable);
                         Dictionary<string, List<string>> hours = new Dictionary<string, List<string>>();
                         for (int j = 0; j < storeHoursDataTable.Rows.Count; j++)
                         {
@@ -68,13 +66,13 @@ namespace Restaurant_API.Controllers
                             }
                         }
                         stores.Add(new Store(
-                            Convert.ToString(data["storeId"]),
-                            Convert.ToString(data["storeName"]),
-                            Convert.ToString(data["address1"]),
-                            Convert.ToString(data["address2"]),
-                            Convert.ToString(data["city"]),
-                            Convert.ToString(data["state"]).ToUpper(),
-                            Convert.ToInt16(data["postalCode"]),
+                            Convert.ToString(dataTable.Rows[i]["storeId"]),
+                            Convert.ToString(dataTable.Rows[i]["storeName"]),
+                            Convert.ToString(dataTable.Rows[i]["address1"]),
+                            Convert.ToString(dataTable.Rows[i]["address2"]),
+                            Convert.ToString(dataTable.Rows[i]["city"]),
+                            Convert.ToString(dataTable.Rows[i]["state"]).ToUpper(),
+                            Convert.ToInt16(dataTable.Rows[i]["postalCode"]),
                             hours
                         ));
                     }
@@ -84,7 +82,10 @@ namespace Restaurant_API.Controllers
                     });
                 } else
                 {
-                    return BadRequest("There was an issue fetching the stores data.");
+                    return BadRequest(new Dictionary<string, object>(){
+                        { "status", StatusCodes.Status400BadRequest },
+                        { "message", "There was an issue fetching the stores data." }
+                    });
                 }
             } catch (Exception ex)
             {

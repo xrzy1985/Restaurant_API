@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Restaurant_API.models;
-using Restaurant_API.queries;
 using System.Data;
 
 namespace Restaurant_API.Controllers
@@ -10,34 +10,32 @@ namespace Restaurant_API.Controllers
     public class StoreMealTypesController : ControllerBase
     {
         public readonly IConfiguration _config;
-        private string _sqlString;
+        private SqlConnection _conn;
         public StoreMealTypesController(IConfiguration config)
         {
             _config = config;
-            _sqlString = "";
+            _conn = new SqlConnection(_config.GetConnectionString("Restaurant").ToString());
         }
 
         [HttpGet("{storeId}")]
         public ActionResult<object> GetStoreMealTypes(string storeId)
         {
-            if (new ParameterCheck().IsMalicious(storeId))
-            {
-                return Unauthorized("There was an error with the storeId parameter.");
-            }
             try
             {
-                _sqlString = $"select type, time from storeMealTypes where storeId = '{storeId}';";
-                DataRowCollection data = new GetQuery(_sqlString, _config).GetDataTable().Rows;
+                DataTable dt = new DataTable();
+                SqlDataAdapter dataAdapter = new SqlDataAdapter("select type, time from storeMealTypes where storeId=@StoreId;", _conn);
+                dataAdapter.SelectCommand.Parameters.Add("@StoreId", SqlDbType.NVarChar, 2000).Value = storeId;
+                dataAdapter.Fill(dt);
                 List<StoreMealType> mealTypes = new List<StoreMealType>();
-                if (data.Count > 0)
+                if (dt.Rows.Count > 0)
                 {
-                    for (int i = 0; i < data.Count; i++)
+                    for (int i = 0; i < dt.Rows.Count; i++)
                     {
-                        if (data[i] != null)
+                        if (dt.Rows[i] != null)
                         {
                             mealTypes.Add(new StoreMealType(
-                                Convert.ToString(data[i]["type"]),
-                                Convert.ToString(data[i]["time"])
+                                Convert.ToString(dt.Rows[i]["type"]),
+                                Convert.ToString(dt.Rows[i]["time"])
                             ));
                         }
                     }
@@ -49,11 +47,10 @@ namespace Restaurant_API.Controllers
                     });
                 } else
                 {
-                    return Ok(new Dictionary<string, object>()
+                    return NotFound(new Dictionary<string, object>()
                     {
-                        { "status", StatusCodes.Status200OK },
-                        { "storeId", storeId },
-                        { "data", mealTypes }
+                        { "status", StatusCodes.Status404NotFound },
+                        { "message", "No records were found." }
                     });
                 }
             } catch (Exception ex)

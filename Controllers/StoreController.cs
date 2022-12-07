@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Restaurant_API.queries;
 using Restaurant_API.models;
 using System.Data;
+using Microsoft.Data.SqlClient;
 
 namespace Restaurant_API.Controllers
 {
@@ -10,31 +10,33 @@ namespace Restaurant_API.Controllers
     public class StoreController : ControllerBase
     {
         public readonly IConfiguration _config;
-        private string _sqlString;
+        private SqlConnection _conn;
+        private DataTable _dt;
         public StoreController(IConfiguration config)
         {
             _config = config;
-            _sqlString = "";
+            _conn = new SqlConnection(_config.GetConnectionString("Restaurant").ToString());
+            _dt = new DataTable();
         }
 
         [HttpGet("{storeId}")]
         public ActionResult<object> GetStore(string storeId)
         {
-            if (new ParameterCheck().IsMalicious(storeId))
-            {
-                return Unauthorized("There was an error with the disposition parameter.");
-            }
-            _sqlString = $"select storeId,storeName,address1,address2,city,state,postalCode from stores where storeId='{storeId}';";
             try
             {
-                DataTable dt = new GetQuery(_sqlString, _config).GetDataTable();
-                if (dt.Rows.Count > 0)
+                SqlDataAdapter dataAdapter =
+                    new SqlDataAdapter("select storeId,storeName,address1,address2,city,state,postalCode from stores where storeId=@StoreId;", _conn);
+                dataAdapter.SelectCommand.Parameters.Add("@StoreId", SqlDbType.NVarChar, 2000).Value = storeId;
+                dataAdapter.Fill(_dt);
+                if (_dt.Rows.Count > 0)
                 {
                     Dictionary<string, List<string>> hours = new Dictionary<string, List<string>>();
                     try
                     {
-                        string hoursSql = $"select * from storeHours where storeId = '{storeId}'";
-                        DataTable storeHoursDataTable = new GetQuery(hoursSql, _config).GetDataTable();
+                        DataTable storeHoursDataTable = new DataTable();
+                        dataAdapter = new SqlDataAdapter("select * from storeHours where storeId=@StoreId", _conn);
+                        dataAdapter.SelectCommand.Parameters.Add("@StoreId", SqlDbType.NVarChar, 2000).Value = storeId;
+                        dataAdapter.Fill(storeHoursDataTable);
                         DataRowCollection storeHoursCollection = storeHoursDataTable.Rows;
                         if (storeHoursCollection != null)
                         {
@@ -72,13 +74,13 @@ namespace Restaurant_API.Controllers
                     {
                         { "status", StatusCodes.Status200OK },
                         { "data", new Store(
-                                Convert.ToString(dt.Rows[0]["storeId"]),
-                                Convert.ToString(dt.Rows[0]["storeName"]),
-                                Convert.ToString(dt.Rows[0]["address1"]),
-                                Convert.ToString(dt.Rows[0]["address2"]),
-                                Convert.ToString(dt.Rows[0]["city"]),
-                                Convert.ToString(dt.Rows[0]["state"]),
-                                Convert.ToInt16(dt.Rows[0]["postalCode"]),
+                                Convert.ToString(_dt.Rows[0]["storeId"]),
+                                Convert.ToString(_dt.Rows[0]["storeName"]),
+                                Convert.ToString(_dt.Rows[0]["address1"]),
+                                Convert.ToString(_dt.Rows[0]["address2"]),
+                                Convert.ToString(_dt.Rows[0]["city"]),
+                                Convert.ToString(_dt.Rows[0]["state"]),
+                                Convert.ToInt16(_dt.Rows[0]["postalCode"]),
                                 hours
                             )
                         }

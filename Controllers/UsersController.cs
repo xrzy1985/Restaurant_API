@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Restaurant_API.models;
-using Restaurant_API.queries;
 using System.Data;
-using System.Data.SqlTypes;
 
 namespace Restaurant_API.Controllers
 {
@@ -11,11 +10,9 @@ namespace Restaurant_API.Controllers
     public class UsersController : ControllerBase
     {
         public readonly IConfiguration _config;
-        private string _sqlString;
         public UsersController(IConfiguration config)
         {
             _config = config;
-            _sqlString = "";
         }
 
         [HttpGet]
@@ -23,8 +20,9 @@ namespace Restaurant_API.Controllers
         {
             try
             {
-                _sqlString = "select * from users";
-                DataTable dataTable = new GetQuery(_sqlString, _config).GetDataTable();
+                DataTable dataTable = new DataTable();
+                SqlDataAdapter da = new SqlDataAdapter("select * from users", new SqlConnection(_config.GetConnectionString("Restaurant").ToString()));
+                da.Fill(dataTable);
                 List<User> usersList = new List<User>();
                 if (dataTable.Rows.Count > 0)
                 {
