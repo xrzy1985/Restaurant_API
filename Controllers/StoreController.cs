@@ -31,18 +31,17 @@ namespace Restaurant_API.Controllers
                 if (_dt.Rows.Count > 0)
                 {
                     Dictionary<string, List<string>> hours = new Dictionary<string, List<string>>();
-                    try
+                    DataTable storeHoursDataTable = new DataTable();
+                    dataAdapter = new SqlDataAdapter("select * from storeHours where storeId=@StoreId", _conn);
+                    dataAdapter.SelectCommand.Parameters.Add("@StoreId", SqlDbType.NVarChar, 2000).Value = storeId;
+                    dataAdapter.Fill(storeHoursDataTable);
+                    DataRowCollection storeHoursCollection = storeHoursDataTable.Rows;
+                    if (storeHoursCollection != null)
                     {
-                        DataTable storeHoursDataTable = new DataTable();
-                        dataAdapter = new SqlDataAdapter("select * from storeHours where storeId=@StoreId", _conn);
-                        dataAdapter.SelectCommand.Parameters.Add("@StoreId", SqlDbType.NVarChar, 2000).Value = storeId;
-                        dataAdapter.Fill(storeHoursDataTable);
-                        DataRowCollection storeHoursCollection = storeHoursDataTable.Rows;
-                        if (storeHoursCollection != null)
+                        for (int i = 0; i <  storeHoursCollection.Count; i++)
                         {
-                            for(int i = 0; i <  storeHoursCollection.Count; i++)
-                            {
-                                DataRow storeHoursData = storeHoursCollection[i];
+                            DataRow storeHoursData = storeHoursCollection[i];
+                            if (storeHoursData != null) {
                                 if (hours.ContainsKey(Convert.ToString(storeHoursData["dayOfWeek"])))
                                 {
                                     List<string> existingList = new List<string>(hours[Convert.ToString(storeHoursData["dayOfWeek"])]);
@@ -65,10 +64,6 @@ namespace Restaurant_API.Controllers
                                 }
                             }
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
                     }
                     return Ok(new Dictionary<string, object>()
                     {
