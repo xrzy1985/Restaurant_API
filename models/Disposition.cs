@@ -2,7 +2,7 @@
 {
     public class Disposition
     {
-        public string StoreId { get; set; }
+        public string StoreId { get; set; } = "";
         public Boolean Curbside { get; set; }
         public Boolean Delivery { get; set; }
         public Boolean Pickup { get; set; }

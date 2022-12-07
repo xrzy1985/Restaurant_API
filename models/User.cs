@@ -2,9 +2,9 @@
 {
     public class User
     {
-        public string Uuid { get; set; }
-        public string Name { get; set; }
-        public string Email { get; set; }
+        public string Uuid { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Email { get; set; } = "";
         public DateTime Dob { get; set; }
 
         public User() { }
